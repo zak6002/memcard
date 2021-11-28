@@ -1,5 +1,16 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QListWidget, QPushButton, QTextEdit, QLineEdit, QLabel, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QListWidget, QPushButton, QTextEdit, QLineEdit, QLabel, QVBoxLayout, QHBoxLayout, QInputDialog
 
+import json
+
+notes = {'Добро пожаловать!' : {
+        'текст' : 'Это самое лучшее приложение для заметок в мире!',
+        'теги' : ['добро', 'инструкция']
+    }
+}
+'''
+with open('notes_data.json', 'w') as file:
+    json.dump(notes, file)
+'''
 app = QApplication([])
 notes_win = QWidget()
 notes_win.setWindowTitle('Умные Заметки')
@@ -50,6 +61,57 @@ col_2.addLayout(row_4)
 layout_notes.addLayout(col_1, stretch = 2)
 layout_notes.addLayout(col_2, stretch = 1)
 notes_win.setLayout(layout_notes)
+
+def show_note():
+    key = list_notes.selectedItems()[0].text()
+    field_text.setText(notes[key]['текст'])
+    list_tag.clear()
+    list_tag.addItems(notes[key]['теги'])
+
+def add_note():
+    note_name, ok = QInputDialog.getText(notes_win, 'Добавить заметку', 'Название заметки:')
+    if ok and note_name:
+        notes[note_name] = {'текст' : '', 'теги' : []}
+        list_notes.addItem(note_name)
+
+def save_note():
+    if list_notes.selectedItems():
+        key = list_notes.selectedItems()[0].text()
+        notes[key]['текст'] = field_text.toPlainText()
+        with open('notes_data.json', 'w') as file:
+            json.dump(notes, file, sort_keys = True)
+
+def del_note():
+    if list_notes.selectedItems():
+        key = list_notes.selectedItems()[0].text()
+        del notes[key]
+        list_notes.clear()
+        list_tag.clear()
+        field_text.clear()
+        list_notes.addItems(notes)
+        with open('notes_data.json', 'w') as file:
+            json.dump(notes, file, sort_keys = True)
+
+def add_tag():
+    if list_notes.selectedItems():
+        key = list_notes.selectedItems()[0].text()
+        tag = field_tag.text()
+        if not tag in notes[key]['теги']:
+            notes[key]['теги'].append(tag)
+            list_tag.addItem(tag)
+            field_tag.clear()
+        with open('notes_data.json', 'w') as file:
+            json.dump(notes, file, sort_keys = True)
+
+button_tag_add.clicked.connect(add_tag)
+button_note_del.clicked.connect(del_note)
+button_note_save.clicked.connect(save_note)
+button_note_create.clicked.connect(add_note)
+list_notes.itemClicked.connect(show_note)
+
+
+with open('notes_data.json', 'r') as file:
+    notes = json.load(file)
+list_notes.addItems(notes)
 notes_win.show()
 app.exec_()
-
