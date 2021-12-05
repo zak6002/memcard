@@ -103,12 +103,40 @@ def add_tag():
         with open('notes_data.json', 'w') as file:
             json.dump(notes, file, sort_keys = True)
 
+def del_tag():
+    if list_tag.selectedItems():
+        key = list_notes.selectedItems()[0].text()
+        tag = list_tag.selectedItems()[0].text()
+        notes[key]['теги'].remove(tag)
+        list_tag.clear()
+        list_tag.addItems(notes[key]['теги'])
+        with open('notes_data.json', 'w') as file:
+            json.dump(notes, file, sort_keys = True)
+
+def searth_tag():
+    tag = field_tag.text()
+    if button_tag_search.text() == 'Поиск по тэгу' and tag:
+        notes_filtered = {}
+        for note in notes:
+            if tag in notes[note]['теги']:
+                notes_filtered[note] = notes[note]
+        button_tag_search.setText('Сбросить поиск')
+        list_notes.clear()
+        list_tag.clear()
+        list_notes.addItems(notes_filtered)
+    elif button_tag_search.text() == 'Сбросить роиск':
+        list_notes.clear()
+        field_tag.clear()
+        list_tag.clear()
+        list_notes.addItems(notes)
+        button_tag_search.setText('Поиск по тегу')
+
+button_tag_search.clicked.connect(searth_tag)
 button_tag_add.clicked.connect(add_tag)
 button_note_del.clicked.connect(del_note)
 button_note_save.clicked.connect(save_note)
 button_note_create.clicked.connect(add_note)
 list_notes.itemClicked.connect(show_note)
-
 
 with open('notes_data.json', 'r') as file:
     notes = json.load(file)
