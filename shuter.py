@@ -8,10 +8,14 @@ fire_sound = mixer.Sound('fire.ogg')
 
 font.init()
 font2 = font.SysFont('Arial', 36)
+font1 = font.SysFont('Arial', 150)
+win = font1.render('YOU WIN', 1, (0, 255, 0))
+lose = font1.render('YOU LOSE', 1, (255, 0, 0))
 
 img_back = "galaxy.jpg"
 img_hero = "rocket.png"
 img_bullet = 'bullet.png'
+img_explore = 'explore.jpg'
 
 win_width = 700
 win_height = 500
@@ -63,12 +67,12 @@ class Enemy(GameSprite):
             self.rect.y = 0
             lost += 1
 
-rocet = Player(img_hero, 0, 350, 100, 130, 5)
+rocet = Player(img_hero, 0, 350, 100, 130, 6)
 
 bullets = sprite.Group()
 monsters = sprite.Group()
 for i in range(1, 6):
-    monster = Enemy('ufo.png', randint(80, win_width - 80), 0, 100, 100, randint(1, 5))
+    monster = Enemy('ufo.png', randint(80, win_width - 80), 0, 100, 100, randint(1, 2))
     monsters.add(monster)
 
 while run:
@@ -83,18 +87,36 @@ while run:
     if not finish:
         window.blit(background, (0,0))
         
+        rocet.update()
+        monsters.update()
+        bullets.update()
+
+        collides = sprite.groupcollide(monsters, bullets, True, True)
+        for c in collides:
+            score = score + 1
+            monster = Enemy('ufo.png', randint(80, win_width - 80), 0, 100, 100, randint(1, 5))
+            monsters.add(monster)
+
+        
+
+        rocet.reset()
+        monsters.draw(window)
+        bullets.draw(window)
+        
+        if score >= 15:
+            window.blit(win, (70, 150))
+            finish = True
+
+        if lost >= 10 or sprite.spritecollide(rocet, monsters, False, False):
+            window.blit(lose, (50, 150))
+            finish = True
+
         text = font2.render('Счёт:' + str(score), 1, (255, 255, 255))
         window.blit(text, (10, 20))
 
         text_lose = font2.render('Пропущено:' + str(lost), 1, (255, 255, 255))
         window.blit(text_lose, (10, 50))
 
-        rocet.update()
-        monsters.update()
-        bullets.update()
-
-        rocet.reset()
-        monsters.draw(window)
-        bullets.draw(window)
         display.update()
+    
     clock.tick(60)
