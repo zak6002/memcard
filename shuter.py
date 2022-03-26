@@ -1,5 +1,6 @@
 from random import randint
 from pygame import *
+from time import time as timer
 
 mixer.init()
 mixer.music.load('Survive - Omniverse.mp3')
@@ -75,18 +76,37 @@ for i in range(1, 6):
     monster = Enemy('ufo.png', randint(80, win_width - 80), 0, 100, 100, randint(1, 2))
     monsters.add(monster)
 
+rel_time = False
+num_fire = 0
+
 while run:
     for e in event.get():
         if e.type == QUIT:
             run = False
         elif e.type == KEYDOWN:
             if e.key == K_SPACE:
-                fire_sound.play()
-                rocet.fire()
+                if num_fire < 5 and rel_time == False:
+                    num_fire += 1
+                    fire_sound.play()
+                    rocet.fire()
+
+                if num_fire >= 5 and rel_time == False:
+                    last_time = timer()
+                    rel_time = True    
     
     if not finish:
         window.blit(background, (0,0))
         
+        if rel_time == True:
+            now_time = timer()
+
+            if now_time - last_time < 3:
+                reload = font2.render('ПЕРЕЗАРЯДКА ...', 1, (150, 0, 0))
+                window.blit(reload, (260, 460))
+            else:
+                num_fire = 0
+                rel_time = False 
+
         rocet.update()
         monsters.update()
         bullets.update()
@@ -96,8 +116,6 @@ while run:
             score = score + 1
             monster = Enemy('ufo.png', randint(80, win_width - 80), 0, 100, 100, randint(1, 5))
             monsters.add(monster)
-
-        
 
         rocet.reset()
         monsters.draw(window)
@@ -119,4 +137,6 @@ while run:
 
         display.update()
     
+    
+
     clock.tick(60)
